@@ -26,7 +26,7 @@ class BulkTab(object):
     def get_raw_tab(self):
         #automoate the cookie getting?
         r = requests.post(RAW_URL.format(self.league, self.tabidx, self.acct), headers={'Cookie': 'POESESSID={}'.format(self.cookie)})
-        return json.loads(r.text)
+        return r.json()
 
     def process_items(self):
         self.items = [TempItem(itemtxt) for itemtxt in self._raw_tab['items']]

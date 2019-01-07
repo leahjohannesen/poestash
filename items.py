@@ -16,7 +16,8 @@ class BaseItem(object):
         self.itemtype = list(self._raw_val['category'].values())
         self.name = self._raw_val['name']
         self.type = self._raw_val['typeLine']
-        #TODO: type is gross if it's a magic item, compare it to normal shit
+        #TODO: type is gross if it's a magic item, compare it to normal shit,
+        #apparently typeline + icon parsing is the way to do it
 
     def proc_special_info(self):
         #special?

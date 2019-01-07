@@ -4,6 +4,7 @@ import json
 import os
 
 def get_items_from_url(url):
+    #TODO: might need to add icon to bases for ref
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     raw_list = soup.find_all('tr', {'class': 'even'})
