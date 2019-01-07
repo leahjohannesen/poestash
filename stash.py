@@ -1,6 +1,6 @@
 import requests
 import json
-from items import BaseItem
+from items import TempItem
 
 #https://www.pathofexile.com/character-window/get-stash-items?league=BETRAYAL&tabIndex=5&accountName=PookieRoar
 
@@ -29,10 +29,11 @@ class BulkTab(object):
         return json.loads(r.text)
 
     def process_items(self):
-        self.items = [BaseItem(itemtxt) for itemtxt in self._raw_tab['items']]
+        self.items = [TempItem(itemtxt) for itemtxt in self._raw_tab['items']]
 
 if __name__ == '__main__':
-    from teststuff import test_stuff
+    with open('teststuff.json', 'r') as f:
+        test_stuff = json.load(f)
     tab = BulkTab(**test_stuff)
     tab.process_items()
 

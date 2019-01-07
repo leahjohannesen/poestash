@@ -12,10 +12,11 @@ class BaseItem(object):
         #item independently mostly
         self.ilvl = self._raw_val['ilvl']
         self.identified = self._raw_val['identified']
+        self.category = list(self._raw_val['category'].keys())[0]
+        self.itemtype = list(self._raw_val['category'].values())
         self.name = self._raw_val['name']
         self.type = self._raw_val['typeLine']
-        self.category = self._raw_val['category'].keys()[0]
-        self.itemtype = list(self._raw_val['category'].values())
+        #TODO: type is gross if it's a magic item, compare it to normal shit
 
     def proc_special_info(self):
         #special?
@@ -34,7 +35,6 @@ class BaseItem(object):
     def proc_socket_info(self):
         #might do more fancy stuff with linking later
         raw_sock = self._raw_val['sockets']
-        raw_link = 
         self.n_sockets = len(raw_sock)
         self.n_links = Counter([sock['group'] for sock in raw_sock]).most_common()[0][1]
 
@@ -46,8 +46,8 @@ class BaseItem(object):
 
     def __repr__(self):
         special = 'Unique' if self.rarity == 3 else 'Elder' if self.elder else 'Shaper' if self.shaper else 'Normal'
-        links = self.n_links if self.n_links >= 5 else 'NoL'
-        return ''' {} | {} | {} | {} | {}L'''.format(self.name, self.type, self.ilvl, special, links)
+        #links = self.n_links if self.n_links >= 5 else 'NoL'
+        return ''' {} | {} | {} | {} '''.format(self.name, self.type, self.ilvl, special)
 
     def __str__(self):
         special = 'Unique' if self.rarity == 3 else 'Elder' if self.elder else 'Shaper' if self.shaper else 'Normal'
@@ -58,7 +58,7 @@ class BaseItem(object):
  
 class TempItem(BaseItem):
     def __init__(self, raw_val):
-        super(BaseItem, self).__init__(raw_val)
+        super(TempItem, self).__init__(raw_val)
         self.proc_special_info()
 
     def check_base_value(self):
