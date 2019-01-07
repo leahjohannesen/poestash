@@ -30,7 +30,7 @@ class Currencyerator(object):
         return crncy
             
     def create_new_exchange(self):
-        output = {'updated': datetime.datetime.now().timestamp(), 'rate':{}}
+        output = {'updated': datetime.datetime.now().timestamp(), 'rate':{'chaos': 1}}
         with open(CURRENCY_REF_FP, 'r') as f:
             crncydict = json.load(f)
         for currname, curr in crncydict.items():
@@ -62,6 +62,9 @@ class Currencyerator(object):
         if len(amts) == 0:
             return None
         return sum(amts) / float(len(amts))
+
+    def convert(self, pricedicts):
+        return [self.exchange['rate'][prd['currency']] * prd['amount'] for prd in pricedicts]
 
 if __name__ == '__main__':
     ccy = Currencyerator()
