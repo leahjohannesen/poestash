@@ -1,45 +1,56 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import os
+import datetime
 
+CACHE_FP = os.getcwd() + '/refs/currency.json'
+CURRENCY_REF_FP = os.getcwd() + '/refs/currency.txt'
 CURRENCY_URL = 'https://www.pathofexile.com/item-data/currency'
-EXCHANGE_URL = 'https://www.pathofexile.com/api/trade/exchange/Betrayal'
-EXCH_N = 10
+EXCH_URL = 'https://www.pathofexile.com/api/trade/exchange/Betrayal'
+FETCH_URL = 'https://www.pathofexile.com/api/trade/fetch/'
+EXCH_N = 20
 
 class Currencyerator(object):
     def __init__(self):
-        pass
+        self.exchange = self.load_exchange()
 
-    def base_currency_list(self):
-        #if there's no basic file, get a list of them
-        r = requests.get(CURRENCY_URL)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        raw_list = soup.find_all('tr')#, {'class': 'even'})
-        names = []
-        for item in raw_list[1:]:
-            names.append(list(item.find('td', {'class': 'name'}).children)[0])
-        return names
+    def load_exchange(self):
+        if 'currency.json' not in os.listdir('refs'):
+            return self.create_new_exchange()
+        with open(CACHE_FP, 'r') as f:
+            crncy = json.load(f)
+        now = datetime.datetime.now()
+        if crncy['updated'] - now > 2:
+            return self.create_new_exchange()
+        return crncy
+            
+    def create_new_exchange(self):
+        output = {'updated': datetime.datetime.now(), 'rate':{}}
+        with open(CURRENCY_REF_FP, 'r') as f:
+            crncydict = json.load(f)
+        import pdb;pdb.set_trace()
+        for currname, curr in crncydict.items():
+            qry = {"exchange": {"status": {"option":"online"}, "have": ["chaos"], "want": [curr]}}
+            qrys = query_exch_api(qry)
+            result = fetch_exch(qrys)
+            output['rate'][curr] = result
+        return output
 
     def query_exch_api(self, qry):
-        r = requests.post(QUERY_URL, json=qry)
-        return r.json()
+        r = requests.post(EXCH_URL, json=qry)
+        return r.json()['result']
 
     def fetch_exch(self, idlist):
         max_n = min(EXCH_N, len(idlist))
-        results = {}
+        output = []
         for i in range(0, max_n, 10):
             r = requests.get(FETCH_URL + '{' + ','.join(idlist[i:i+10]) + '}')
-            res = r.json()['results']
-            price = {} 
-        return 
+            results = r.json()['result']
+            output += [res['listing']['price']['amount'] for res in results if res]
+        return sum(output) / float(len(output))
     
-    def parse_result(self, results):
-        for res in results:
 
 if __name__ == '__main__':
     ccy = Currencyerator()
-    nms = ccy.base_currency_list()
-    smpl = {"exchange":{"status":{"option":"online"},"have":["chaos"],"want":["exa"]}}
-    blah = ccy.query_exch_api(smpl)
-    testc = ccy.fetch_exch(smpl)
 
