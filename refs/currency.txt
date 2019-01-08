@@ -11,10 +11,12 @@
     "Journeyman Cartographer's Sextant": "journeyman-sextant",
     "Master Cartographer's Sextant": "master-sextant",
     "Orb of Alchemy": "alch",
+    "Orb of Alteration": "alt",
     "Orb of Chance": "chance",
     "Orb of Fusing": "fuse",
     "Orb of Regret": "regret",
     "Orb of Scouring": "scour",
+    "Orb of Transmutation": "tra",
     "Regal Orb": "regal",
     "Vaal Orb": "vaal"
 }
