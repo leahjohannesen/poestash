@@ -3,7 +3,7 @@ others = {
         'Cobalt Jewel',
         'Crimson Jewel',
         'Viridian Jewel',
-        'Murderours Eye Jewel',
+        'Murderous Eye Jewel',
         'Searching Eye Jewel',
         'Hypnotic Eye Jewel',
         'Ghastly Eye Jewel',

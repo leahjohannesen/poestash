@@ -40,7 +40,7 @@ class Traderator(object):
         if hashkw not in self.cache:
             return self.get_new_price_stats(hashkw, query)
         cachetime = self.cache[hashkw]['updated']
-        if now.timestamp() - cachetime > (now - datetime.timedelta(2)).timestamp():
+        if now.timestamp() - cachetime > (now - datetime.timedelta(1)).timestamp():
             return self.get_new_price_stats(hashkw, query)
         print('Price found in cache')
         return self.cache[hashkw]['price']

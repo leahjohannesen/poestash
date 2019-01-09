@@ -40,6 +40,7 @@ class BaseItem(object):
             if item in self.type:
                 self.type = item
                 return
+        print(self._raw_val)
         raise Exception
 
     @classmethod
