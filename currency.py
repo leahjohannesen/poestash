@@ -64,7 +64,15 @@ class Currencyerator(object):
         return sum(amts) / float(len(amts))
 
     def convert(self, pricedicts):
-        return [self.exchange['rate'][prd['currency']] * prd['amount'] for prd in pricedicts]
+        output = []
+        for prd in pricedicts:
+            try:
+                output.append(self.exchange['rate'][prd['currency']] * prd['amount'])
+            except:
+                print('Someone probably put in a fucked up currency - {}'.format(prd))
+                continue
+        return output
+
 
 if __name__ == '__main__':
     ccy = Currencyerator()

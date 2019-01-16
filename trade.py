@@ -20,6 +20,7 @@ class Traderator(object):
     def __init__(self):
         self.cache = self.load_cache()
         self.currency = Currencyerator()
+        self.item_stats = 'min, n5, low10, fullavg, max, n'
 
     def load_cache(self):
         if 'pricecache.pkl' not in os.listdir('refs'):
@@ -40,7 +41,8 @@ class Traderator(object):
         if hashkw not in self.cache:
             return self.get_new_price_stats(hashkw, query)
         cachetime = self.cache[hashkw]['updated']
-        if now.timestamp() - cachetime > (now - datetime.timedelta(1)).timestamp():
+        if cachetime < (now - datetime.timedelta(1)).timestamp():
+            print('Found in cache, but old')
             return self.get_new_price_stats(hashkw, query)
         print('Price found in cache')
         return self.cache[hashkw]['price']

@@ -49,7 +49,7 @@ class BaseItem(object):
         item_type = list(item_info.keys())[0]
         item_subtype = list(item_info.values())[0]
         #trt the subtype, if it's not there, default to type class
-        if item_type == 'gems':
+        if item_type in ['gems', 'flasks']:
             return
         try:
             return ITEM_REF[item_subtype[0]](raw_val)
