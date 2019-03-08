@@ -7,10 +7,12 @@ import numpy as np
 import pickle
 from currency import Currencyerator
 
-CACHE_FP = os.getcwd() + '/refs/pricecache.pkl'
+CACHE_FP = os.getcwd() + '/refs/mappricecache.pkl'
 FETCH_URL = 'https://www.pathofexile.com/api/trade/fetch/'
-QUERY_URL = 'https://www.pathofexile.com/api/trade/search/Betrayal'
+QUERY_URL = 'https://www.pathofexile.com/api/trade/search/Standard'
 QUERY_N = 50
+MAP_QUERY_N = 100
+STALETIME = 0.1
 
 class Traderator(object):
     '''
@@ -20,7 +22,6 @@ class Traderator(object):
     def __init__(self):
         self.cache = self.load_cache()
         self.currency = Currencyerator()
-        self.item_stats = 'min, n5, low10, fullavg, max, n'
 
     def load_cache(self):
         if 'pricecache.pkl' not in os.listdir('refs'):
@@ -41,7 +42,7 @@ class Traderator(object):
         if hashkw not in self.cache:
             return self.get_new_price_stats(hashkw, query)
         cachetime = self.cache[hashkw]['updated']
-        if cachetime < (now - datetime.timedelta(1)).timestamp():
+        if cachetime < (now - datetime.timedelta(STALETIME)).timestamp():
             print('Found in cache, but old')
             return self.get_new_price_stats(hashkw, query)
         print('Price found in cache')
@@ -87,17 +88,84 @@ class Traderator(object):
         #leave out the nones
         clean_prices = [price for price in raw_prices if price]
         if not clean_prices:
-            return (0, 0, 0, 0, 0 ,0)
+            return (np.zeros(10), 0, 0)
         prices = np.array(self.currency.convert(clean_prices))
         prices = np.sort(prices)
-        full_avg = prices.mean()
-        min_val = prices[0]
-        max_val = prices[-1]
-        if prices.size < 10:
-            return (min_val, None, None, full_avg, max_val, prices.size)
-        n_5 = prices[5]
-        low_10_avg = prices[:10].mean()
-        return (min_val, n_5, low_10_avg, full_avg, max_val, prices.size)
+        output = np.pad(prices, (0, 10), 'constant', constant_values=np.nan)[:10].round(1)
+        return (output, np.nanmean(output), np.mean(prices))
+
+class MapTraderator(Traderator):
+    def __init__(self):
+        super(MapTraderator, self).__init__()
+
+    def load_cache(self):
+        if 'mappricecache.pkl' not in os.listdir('refs'):
+            return {}
+        with open(CACHE_FP, 'rb') as f:
+            return pickle.load(f)
+
+    def save_cache(self):
+        with open(CACHE_FP, 'wb') as f:
+            pickle.dump(self.cache, f)
+
+    def purge_item(self, hashkw):
+        self.cache.pop(hashkw)
+        self.save_cache()
+
+    def get_price_stats(self, hashkw, query):
+        now = datetime.datetime.now()
+        if hashkw not in self.cache:
+            return self.get_new_price_stats(hashkw, query)
+        cachetime = self.cache[hashkw]['updated']
+        if cachetime < (now - datetime.timedelta(STALETIME)).timestamp():
+            print('Found in cache, but old')
+            oldvals = self.cache[hashkw]['price']
+            return self.update_price_stats(hashkw, query, oldvals)
+        print('Price found in cache')
+        return self.cache[hashkw]['price']
+
+    def get_new_price_stats(self, hashkw, query):
+        outarr = np.zeros((3, 25))
+        #all the steps
+        print('Querying for price')
+        query_res = self.query_trade_api(query)
+        fetch_res = self.fetch_trade(query_res['result'])
+        newarr, shortmean, longmean = self.process_prices(fetch_res)
+        outarr[0,:] = newarr
+        #todo: add to cache
+        self.cache[hashkw] = {
+                'updated':datetime.datetime.now().timestamp(),
+                'price': (outarr, shortmean, longmean),
+            }
+        return (outarr, shortmean, longmean)
+
+    def update_price_stats(self, hashkw, query, oldvals):
+        outarr = np.zeros((3, 25))
+        outarr[1:,] = oldvals[0][:2,]
+        #all the steps
+        print('Querying for price')
+        query_res = self.query_trade_api(query)
+        #print('Found {} results, fetching and converting'.format(query_res['total']))
+        fetch_res = self.fetch_trade(query_res['result'])
+        newarr, shortmean, longmean = self.process_prices(fetch_res)
+        outarr[0,:] = newarr
+        #todo: add to cache
+        self.cache[hashkw] = {
+                'updated':datetime.datetime.now().timestamp(),
+                'price': (outarr, shortmean, longmean),
+            }
+        return (outarr, shortmean, longmean)
+
+    def process_prices(self, raw_prices):
+        #converts the prices and i think can be fancier later
+        #leave out the nones
+        clean_prices = [price for price in raw_prices if price]
+        if not clean_prices:
+            return (np.zeros(25), 0, 0)
+        prices = np.array(self.currency.convert(clean_prices))
+        prices = np.sort(prices)
+        output = np.pad(prices, (0, 25), 'constant', constant_values=np.nan)[:25].round(1)
+        return (output, np.nanmean(output), np.mean(prices))
 
 
 if __name__ == '__main__':

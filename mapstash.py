@@ -1,7 +1,8 @@
 import requests
 import json
-from trade import Traderator
-from items import BaseItem
+from trade import MapTraderator
+from items import BaseMap
+from collections import defaultdict
 
 #https://www.pathofexile.com/character-window/get-stash-items?league=BETRAYAL&tabIndex=5&accountName=PookieRoar
 
@@ -15,52 +16,48 @@ def get_cookie(cookie=None):
     else:
         return cookie
 
-class BulkTab(object):
+class BulkMapTab(object):
     def __init__(self, cookie, acct, league, tabidx):
         self.cookie = cookie
         self.tabidx = tabidx
         self.acct = acct
         self.league = league
         self._raw_tab = self.get_raw_tab()
-        self.traderator = Traderator()
+        self.traderator = MapTraderator()
         self.priced_items = None
 
     def get_raw_tab(self):
         #automoate the cookie getting?
         r = requests.post(RAW_URL.format(self.league, self.tabidx, self.acct), headers={'Cookie': 'POESESSID={}'.format(self.cookie)})
-        return r.json()['items']
+        rawtab = r.json()['items']
+        return sorted(rawtab, key=lambda x: (x['x'], x['y']))
 
     def process_items(self):
         print('Processing {} items'.format(len(self._raw_tab)))
         itemlist = []
+        mapdict = defaultdict(list)
         for i, item_txt in enumerate(self._raw_tab):
-            if i % 10 == 0:
-                self.traderator.save_cache()
-            item = BaseItem.get_item_cls(item_txt)
-            #quick skip for not implemented
-            if item is None:
-                continue
-            print('Found item - {}'.format(item))
+            item = BaseMap(item_txt)
+            mapdict[str(item)].append(item)
+        for mapn, maplist in mapdict.items():
+            item = maplist[0]
             price_stuff = self.traderator.get_price_stats(item.item_hash, item.item_query)
-            itemtuple = (str(item), item.position, price_stuff)
+            itemtuple = (mapn, len(maplist), price_stuff)
             itemlist.append(itemtuple)
         self.priced_items = itemlist
         print('Pricing finished, writing cache')
         self.traderator.save_cache()
 
     def display_results(self):
-        val_items = [(iname, ipos, ival, ival[1])
-                        for iname, ipos, ival in self.priced_items]
-        print('Displaying maybe valuable bases')
-        print(self.traderator.item_stats)
-        for iname, ipos, ival, compval in val_items:
-            if compval > 2:
+        print('Rough Map Values')
+        for iname, ipos, ival in self.priced_items:
                 print('{} - {}\n{}\n------'.format(iname, ipos, ival))
         print('Finished')
 
 if __name__ == '__main__':
     with open('teststuff.json', 'r') as f:
         test_stuff = json.load(f)
-    tab = BulkTab(**test_stuff)
+    test_stuff['tabidx'] = 4
+    tab = BulkMapTab(**test_stuff)
     tab.process_items()
     tab.display_results()

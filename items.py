@@ -93,6 +93,7 @@ class BaseItem(object):
                     'filters': {
                         'elder_item': {'option': self.elder},
                         'shaper_item': {'option': self.shaper},
+                        'corrupted': {'option': self.corrupted},
                         'ilvl': {'max': self.ilvl, 'min': self.ilvl},
                         },
                     },
@@ -115,14 +116,14 @@ class BaseItem(object):
         query = self._base_query
         query['type'] = self.type
         query['name'] = self.name
-        #query['filters'] = {
-        #        'type_filters': {
-        #            'disabled': False,
-        #            'filters': {
-        #                'rarity': {'option': 'unique'},
-        #                },
-        #            }
-        #        }
+        query['filters'] = {
+                'misc_filters': {
+                    'disabled': False,
+                    'filters': {
+                        'corrupted': {'option': 'false'},
+                        },
+                    }
+                }
         return {'query': query, 'sort': {'price': 'asc'}}
 
     @property
@@ -149,6 +150,42 @@ class BaseAccessory(BaseItem):
 class BaseJewel(BaseItem):
     def __init__(self, raw_val):
         super(BaseJewel, self).__init__(raw_val)
+
+class BaseMap(BaseItem):
+    def __init__(self, raw_val):
+        super(BaseMap, self).__init__(raw_val)
+        self.elder = 'Elder' in self.type
+        self.shaper = 'Shaped' in self.type
+        self.type = self.type.replace('Elder ', '').replace('Shaped ', '').replace('Superior ', '')
+
+    def __repr__(self):
+        prefix = 'Elder ' if self.elder else 'Shaped ' if self.shaper else ''
+        return prefix + self.type
+
+    @property
+    def item_query(self):
+        query = self._base_query
+        query['type'] = {
+                'option': self.type,
+                'discriminator': 'warfortheatlas',
+                }
+        query['filters'] = {
+                'map_filters': {
+                    'disabled': False,
+                    'filters': {
+                        'map_elder': {'option': self.elder},
+                        'map_shaped': {'option': self.shaper},
+                        },
+                    },
+                }
+        return {'query': query, 'sort': {'price': 'asc'}}
+
+    @property
+    def item_hash(self):
+        return (self.type, self.elder, self.shaper)
+
+    def overwrite_type(self):
+        pass
 
 #eventually i can do item specific queries
 ITEM_REF = {

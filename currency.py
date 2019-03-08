@@ -11,6 +11,7 @@ CURRENCY_URL = 'https://www.pathofexile.com/item-data/currency'
 EXCH_URL = 'https://www.pathofexile.com/api/trade/exchange/Betrayal'
 FETCH_URL = 'https://www.pathofexile.com/api/trade/fetch/'
 EXCH_N = 20
+STALETIME = 0.5
 
 class Currencyerator(object):
     def __init__(self):
@@ -23,7 +24,7 @@ class Currencyerator(object):
         with open(CACHE_FP, 'r') as f:
             crncy = json.load(f)
         now = datetime.datetime.now()
-        if now.timestamp() - crncy['updated'] > (now - datetime.timedelta(days=2)).timestamp():
+        if now.timestamp() - crncy['updated'] > (now - datetime.timedelta(days=STALETIME)).timestamp():
             print('Currency rates stale (probably), fetching new ones')
             return self.create_new_exchange()
         print('Using cached rates')
