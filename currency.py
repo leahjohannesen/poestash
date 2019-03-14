@@ -8,7 +8,7 @@ import time
 CACHE_FP = os.getcwd() + '/refs/currency.json'
 CURRENCY_REF_FP = os.getcwd() + '/refs/currency.txt'
 CURRENCY_URL = 'https://www.pathofexile.com/item-data/currency'
-EXCH_URL = 'https://www.pathofexile.com/api/trade/exchange/Betrayal'
+EXCH_URL = 'https://www.pathofexile.com/api/trade/exchange/Synthesis'
 FETCH_URL = 'https://www.pathofexile.com/api/trade/fetch/'
 EXCH_N = 20
 STALETIME = 0.5
@@ -74,6 +74,8 @@ class Currencyerator(object):
                 continue
         return output
 
+    def fancy_raw(self, pricedicts):
+        return [(x['amount'], x['currency']) for x in pricedicts]
 
 if __name__ == '__main__':
     ccy = Currencyerator()

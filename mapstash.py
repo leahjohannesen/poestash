@@ -57,7 +57,7 @@ class BulkMapTab(object):
 if __name__ == '__main__':
     with open('teststuff.json', 'r') as f:
         test_stuff = json.load(f)
-    test_stuff['tabidx'] = 4
+    test_stuff['tabidx'] = 6
     tab = BulkMapTab(**test_stuff)
     tab.process_items()
     tab.display_results()

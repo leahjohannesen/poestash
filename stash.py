@@ -52,9 +52,8 @@ class BulkTab(object):
         val_items = [(iname, ipos, ival, ival[1])
                         for iname, ipos, ival in self.priced_items]
         print('Displaying maybe valuable bases')
-        print(self.traderator.item_stats)
         for iname, ipos, ival, compval in val_items:
-            if compval > 2:
+            if compval > 3:
                 print('{} - {}\n{}\n------'.format(iname, ipos, ival))
         print('Finished')
 
