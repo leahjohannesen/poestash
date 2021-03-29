@@ -1,1 +1,4 @@
 *.pyc
+utils/cache.json
+refs/credentials.py
+refs/tabconfig.py
