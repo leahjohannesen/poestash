@@ -73,6 +73,31 @@ class Cacherator():
         pass
         #self.save_cache()
 
+
+class CachedBase():
+    cache_key = None
+    cache_time = None
+    force_on_update = False
+
+    def __init__(self):
+        self.cache = Cacherator()
+        self.values = None
+
+    def refresh_values(self):
+        try:
+            self.values = self.cache.check(self.cache_key, self.cache_time)
+            print(f'{self.cache_key} cache hit')
+            return
+        except KeyError:
+            print(f'{self.cache_key} cache miss')
+        values = self.get_new_values()
+        self.cache.add_value(self.cache_key, values, force=self.force_on_update)
+        self.values = values
+
+    def get_new_values(self):
+        raise NotImplementedError
+    
+
 if __name__ == '__main__':
     tstale = 100
     cache = Cacherator(purge=True)

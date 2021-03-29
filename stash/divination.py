@@ -1,13 +1,14 @@
 from stash.basetab import BaseTab
 
-class CurrencyTab(BaseTab):
-    tabkey = 'currency'
-    cache_key = 'tab|currency'
+class DivinationTab(BaseTab):
+    tabkey = 'div'
+    cache_key = 'tab|div'
     cache_time = 60 * 60
     force_on_update = True
+    pricer_config = ['div']
 
     def parse_values(self, raw_tab):
-        return {curr['baseType']: curr['stackSize'] for curr in raw_tab}
+        return {val['baseType']: val['stackSize'] for val in raw_tab}
 
     @property
     def price_values(self):
@@ -26,5 +27,7 @@ class CurrencyTab(BaseTab):
         return [f'{val[0]:7.1f} | {val[1]:6} | {int(val[2]):6} | {val[3]}' for val in srted]
 
 
+
+
 if __name__ == '__main__':
-    tab = CurrencyTab()
+    tab = DivinationTab()
