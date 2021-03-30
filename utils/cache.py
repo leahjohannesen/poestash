@@ -4,115 +4,71 @@ import datetime
 import time
 
 CACHE_FP = 'utils/cache.json'
+SAVE_TIMEOUT = 5 * 60
 
-# TODO maybe db this at some point
-# idea is one big cache, and each thing produces a unique id to ref against
-class Cacherator():
-    # min time to write cache to avoid spamming
-    min_t = 5 * 60
-    
-    def __init__(self, purge=False):
-        self.cache = None
-        self.last_updated = None
-        if purge:
-            self.rem_cache()
-        self.load_cache()
+def load_cache():
+    try:
+        with open(CACHE_FP, 'r') as f:
+            print('Cache loaded from file')
+            return json.load(f)
+    except FileNotFoundError:
+        print('Creating fresh cache')
+        return {}
 
-    def load_cache(self):
-        try:
-            with open(CACHE_FP, 'r') as f:
-                self.cache = json.load(f)
-                self.last_updated = self.now
-                print('Cache loaded')
-                return
-        except FileNotFoundError as e:
-            print('Cache file not found, creating')
-        self.create_cache()
+def get_now():
+    return int(time.time())
 
-    def create_cache(self):
-        self.cache = {}
-        self.save_cache(True)
+CACHE = load_cache()
+LAST_UPDATED = get_now()
 
-    def rem_cache(self):
-        try:
-            os.remove(CACHE_FP)
-            print('Cache removed')
-        except:
-            pass
+def cacheable():
+    def cache_func(func):
+        def wrapped(*args, skip_cache=False):
+            cache_key = args[0].cache_key
+            timeout = args[0].timeout
+            force_save = args[0].force_save
+            print(args)
+            now = get_now()
+            try:
+                if skip_cache:
+                    print(f'cache | {cache_key} | force skip')
+                    raise KeyError
+                cached_val = CACHE[cache_key]
+                if now - cached_val[0] > timeout:
+                    print(f'cache | {cache_key} | stale')
+                    raise KeyError
+                print(f'cache | {cache_key} | successful')
+                return cached_val[1]
+            except KeyError:
+                print(f'cache | {cache_key} | miss')
+                CACHE[cache_key] = (now, func(*args))
+                save_cache(force_save)
+                return CACHE[cache_key][1]
+        return wrapped
+    return cache_func
 
-    def save_cache(self, force):
-        delta = 0 if force else self.now - self.last_updated
-        if not force and delta < self.min_t:
-            print('Skipping save')
-            return
-        with open(CACHE_FP, 'w') as f:
-            print('Saving cache')
-            json.dump(self.cache, f)
-        self.last_updated = self.now
-        return
+# CAREFUL
+def get_cache():
+    return CACHE
 
-    def check(self, key, tstale):
-        try:
-            cache_val = self.cache[key]
-            delta = self.now - cache_val['ts']
-            if delta < tstale:
-                return cache_val['value']
-        except:
-            raise
+def save_cache(force_save):
+    now = get_now()
+    global LAST_UPDATED
+    if not force_save and now - LAST_UPDATED < SAVE_TIMEOUT:
+        print('cache | save skipped')
+        return False
+    with open(CACHE_FP, 'w') as f:
+        json.dump(CACHE, f)
+    print(f'cache | save | force : {force_save}')
+    LAST_UPDATED = now
+    return True
 
-    def add_value(self, key, value, force=False):
-        print(f'cache adding {key} to cache')
-        self.cache[key] = {'ts': self.now, 'value': value}
-        self.save_cache(force)
+def restart_cache():
+    print('Restarting the cache')
+    global CACHE
+    os.remove(CACHE_FP)
+    CACHE = load_cache()
 
-    @property
-    def now(self):
-        return int(datetime.datetime.now().timestamp())
-
-    def __del__(self):
-        pass
-        #self.save_cache()
-
-
-class CachedBase():
-    cache_key = None
-    cache_time = None
-    force_on_update = False
-
-    def __init__(self):
-        self.cache = Cacherator()
-        self.values = None
-
-    def refresh_values(self):
-        try:
-            self.values = self.cache.check(self.cache_key, self.cache_time)
-            print(f'{self.cache_key} cache hit')
-            return
-        except KeyError:
-            print(f'{self.cache_key} cache miss')
-        values = self.get_new_values()
-        self.cache.add_value(self.cache_key, values, force=self.force_on_update)
-        self.values = values
-
-    def get_new_values(self):
-        raise NotImplementedError
-    
 
 if __name__ == '__main__':
-    tstale = 100
-    cache = Cacherator(purge=True)
-    cache.add_value('butts', 'spaghetti')
-    print('butts check', cache.check('butts', tstale))
-    print('farts check', cache.check('farts', tstale))
-    time.sleep(2)
-    cache.add_value('farts', 'banana')
-    print(cache.cache)
-    print('butts check', cache.check('butts', tstale))
-    print('farts check', cache.check('farts', tstale))
-    time.sleep(2)
-    cache.add_value('butts', 'toot')
-    print(cache.cache)
-    print('butts check', cache.check('butts', tstale))
-    print('farts check', cache.check('farts', tstale))
-
-
+    pass

@@ -1,10 +1,5 @@
-import requests
-import json
-import os
-import datetime
-import time
-from pricing import CurrencyPricer, FragPricer, ScarabPricer, DivPricer
-from utils.cache import CachedBase
+from pricers.basics import CurrencyPricer, FragPricer, ScarabPricer, DivPricer
+from utils.cache import cacheable
 from refs import credentials
 from functools import reduce
 
@@ -18,21 +13,17 @@ class FullPricer():
     }
     def __init__(self, pricer_keys):
         self.pricers = {key: self.refs[key]() for key in pricer_keys}
-        self.values = None
-        self.refresh_values()
 
-    def refresh_values(self):
-        for pricer in self.pricers.values():
-            pricer.refresh_values() 
-        self.values = reduce(lambda x, y: {**x, **y}, [pricer.values for pricer in self.pricers.values()])
+    def get_values(self):
+        return reduce(lambda x, y: {**x, **y}, [pricer.get_values() for pricer in self.pricers.values()])
 
-    def lookup(self, key):
+    def lookup(self, values, key):
         try:
-            return self.values[key]
+            return values[key]
         except:
             if key == 'Chaos Orb':
                 return 1
             raise f'Pricing error, key not found: {key}'
 
 if __name__ == '__main__':
-    pricers = FullPricer(['curr', 'frag'])
+    pricers = FullPricer(['curr'])
