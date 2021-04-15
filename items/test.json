@@ -1,0 +1,48 @@
+// alt options:  superior - 0, anom - 1, div - 2, phantas - 3 (Any alternate - alternate)
+
+// smite 5M6mnmUa
+{
+    "query": {
+        "status": {
+            "option": "online"
+        },
+        "type": "Smite",
+        "stats": [
+            {
+                "type": "and",
+                "filters": []
+            }
+        ]
+    },
+    "sort": {
+        "price": "asc"
+    }
+}
+
+//
+{
+    "query": {
+        "status": {
+            "option": "online"
+        },
+        "type": "Smite",
+        "stats": [
+            {
+                "type": "and",
+                "filters": []
+            }
+        ],
+        "filters": {
+            "misc_filters": {
+                "filters": {
+                    "gem_alternate_quality": {
+                        "option": "1"
+                    }
+                }
+            }
+        }
+    },
+    "sort": {
+        "price": "asc"
+    }
+}

@@ -16,8 +16,7 @@ class FragPricer(BasePricer):
     force_save = True
     url = 'https://poe.ninja/api/data/CurrencyOverview?league={}&type=Fragment&language=en'
 
-    def get_new_values(self):
-        raw_values = self.get_raw_values()
+    def parse_raw_values(self, raw_values):
         return {val['currencyTypeName']: val['chaosEquivalent'] for val in raw_values}
 
 class DivPricer(BasePricer):
@@ -26,8 +25,7 @@ class DivPricer(BasePricer):
     force_save = True
     url = 'https://poe.ninja/api/data/ItemOverview?league={}&type=DivinationCard&language=en'
 
-    def get_new_values(self):
-        raw_values = self.get_raw_values()
+    def parse_raw_values(self, raw_values):
         return {val['name']: val['chaosValue'] for val in raw_values}
 
 class ScarabPricer(BasePricer):
@@ -36,8 +34,7 @@ class ScarabPricer(BasePricer):
     force_save = True
     url = 'https://poe.ninja/api/data/ItemOverview?league={}&type=Scarab&language=en'
 
-    def get_new_values(self):
-        raw_values = self.get_raw_values()
+    def parse_raw_values(self, raw_values):
         return {val['name']: val['chaosValue'] for val in raw_values}
 
 if __name__ == '__main__':

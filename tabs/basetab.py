@@ -20,7 +20,7 @@ class BaseTab():
         self.tabidx = tabconfig[self.tabkey]
 
     @cacheable()
-    def get_values(self, skip_cache=False):
+    def get_values(self, force_skip=False):
         raw = self.get_raw_tab(**credentials)
         return self.parse_raw_values(raw)
 
@@ -32,7 +32,7 @@ class BaseTab():
     def parse_raw_values(self, raw_tab):
         raise NotImplementedError
 
-    def price_tab(self, skip_cache=False):
+    def display_prices(self, force_skip=False):
         raise NotImplementedError
 
 if __name__ == '__main__':

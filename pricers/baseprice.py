@@ -20,7 +20,7 @@ class BasePricer():
         r = requests.get(self.url.format(credentials['league']))
         return r.json()['lines']
 
-    def parse_raw_values(self):
+    def parse_raw_values(self, raw_values):
         raise NotImplementedError
 
 if __name__ == '__main__':
