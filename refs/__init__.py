@@ -1,2 +1,2 @@
 from .credentials import credentials
-from .tabconfig import tabconfig
+from .tabconfig import get_tabconfig

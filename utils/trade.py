@@ -9,22 +9,26 @@ class TradeError(Exception):
     pass
 
 def get_listings(query, max_res=25):
-        query_result = _query_trade_api(query)
-        return _fetch_trades(query_result['result'], max_res)
-    
+    query_result = _query_trade_api(query)
+    return _fetch_trades(query_result['result'], max_res)
+
+def get_listings_url(url, max_res=25):
+    query_result = _query_trade_url(url)
+    return
+
 def _query_trade_api(query):
-        #hits the trade api
-        uagent = credentials['uagent']
-        cookie = credentials['cookie']
-        r = requests.post(QUERY_URL, json=query, headers={'User-Agent': uagent, 'Cookie': 'POESESSID={}'.format(cookie)})
-        time.sleep(1)
-        if r.status_code != 200:
-            print(f'query :: failed :: {r.status_code} :: {r.text}')
-            print(query)
-            if r.status_code == 400:
-                raise TradeError
-            raise
-        return r.json()
+    #hits the trade api
+    uagent = credentials['uagent']
+    cookie = credentials['cookie']
+    time.sleep(2)
+    r = requests.post(QUERY_URL, json=query, headers={'User-Agent': uagent, 'Cookie': 'POESESSID={}'.format(cookie)})
+    if r.status_code != 200:
+        print(f'query :: failed :: {r.status_code} :: {r.text}')
+        print(query)
+        if r.status_code == 400:
+            raise TradeError
+        raise
+    return r.json()
 
 def _fetch_trades(idlist, max_res=25):
     #fetches the results given the trade api ids
@@ -33,6 +37,7 @@ def _fetch_trades(idlist, max_res=25):
     max_n = min(max_res, len(idlist))
     output = []
     for i in range(0, max_n, 10):
+        time.sleep(1)
         full_url = FETCH_URL + ','.join(idlist[i:i+10])
         r = requests.get(full_url, headers={'User-Agent': uagent, 'Cookie': 'POESESSID={}'.format(cookie)})
         results = r.json()['result']
@@ -50,7 +55,6 @@ def _fetch_trades(idlist, max_res=25):
             output.append(res)
         # output += [res for res in results if res is not None 
         #             and res['price']['currency'] in {'chaos', 'exalted'}]
-        time.sleep(0.5)
     return output
         
 if __name__ == '__main__': 

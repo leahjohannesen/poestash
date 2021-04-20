@@ -1,4 +1,6 @@
-from pricers.basics import CurrencyPricer, FragPricer, ScarabPricer, DivPricer
+from pricers.basics import CurrencyPricer, FragPricer, ScarabPricer, \
+    DivPricer, EssencePricer, FossilPricer, OilPricer, DeliPricer
+from pricers.uniques import UniquePricer
 from utils.cache import cacheable
 from refs import credentials
 from functools import reduce
@@ -10,6 +12,11 @@ class FullPricer():
         'frag': FragPricer,
         'scarab': ScarabPricer,
         'div': DivPricer,
+        'ess': EssencePricer,
+        'foss': FossilPricer,
+        'oil': OilPricer,
+        'deli': DeliPricer,
+        'unique': UniquePricer,
     }
     def __init__(self, pricer_keys):
         self.pricers = {key: self.refs[key]() for key in pricer_keys}

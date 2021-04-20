@@ -1,7 +1,7 @@
 from utils import cacheable, get_listings
 from utils.trade import TradeError
 from functools import cached_property
-from items.baseitems import get_base_query
+from items.utils import get_base_query
 from pricers import Exchange
 from datetime import datetime, timedelta
 

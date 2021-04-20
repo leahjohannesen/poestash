@@ -38,10 +38,11 @@ def cacheable():
                 if now - cached_val[0] > timeout:
                     reason = ' - stale'
                     raise KeyError
-                print(f'cache - {ck} - successful')
+                #print(f'cache - {ck} - successful')
                 return cached_val[1]
             except KeyError:
-                print(f'cache - {ck} - miss {reason}')
+                #print(f'cache - {ck} - miss {reason}')
+                pass
             CACHE[ck] = (now, func(*args))
             save_cache(force_save)
             return CACHE[ck][1]
